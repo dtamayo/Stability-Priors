@@ -13,10 +13,12 @@ import time
 import pandas as pd
 if not '../MLstability/generate_training_data' in sys.path:
     sys.path.append('../MLstability/generate_training_data')
-from training_data_functions import ressummaryfeaturesxgb
+# from training_data_functions import ressummaryfeaturesxgb
+from training_data_functions import ressummaryfeaturesxgbv6
 
 folderpath = '../MLstability'
-model = 'ressummaryfeaturesxgb_resonantAMD.pkl'
+# model = 'ressummaryfeaturesxgb_resonantAMD.pkl'
+model = 'ressummaryfeaturesxgbv6_resonant.pkl'
 model, features, featurefolder = dill.load(open(folderpath+'/models/'+model, "rb"))
 
 seconds_p_day = 86400
@@ -45,9 +47,6 @@ def build_sim(Ps, ms, es=0, incs=0, Mstar=1):
 
     #add star
     sim.add(m=Mstar)
-    # sim.add(m=Ms, r=radii[0]*10**(-3))
-
-    seconds_p_day = 86400
 
     if all(incs==0):
         a = np.cbrt((Ps[i]*(2*np.pi))**2 * Ms)
@@ -113,7 +112,11 @@ def build_HR858(mb, mc, md, es=np.array([rd.rand() * 0.3, rd.rand() * 0.19, rd.r
     
 def stability_score(sim):
     args = (10000, 1000) # (Norbits, Nout) Keep this fixed
-    return model.predict_proba(pd.DataFrame([ressummaryfeaturesxgb(sim, args)]))[:, 1][0]
+    summaryfeatures = ressummaryfeaturesxgbv6(sim, args)
+    if features is not None:
+        summaryfeatures = summaryfeatures[features]
+    summaryfeatures = pd.DataFrame([summaryfeatures])
+    return model.predict_proba(summaryfeatures)[:, 1][0]
 
 #if a collision occurs, end the simulation
 def collision(reb_sim, col):
@@ -124,3 +127,11 @@ def replace_snapshot(sim, filename):
     if os.path.isfile(filename):
         os.remove(filename)
     sim.simulationarchive_snapshot(filename)
+    
+def VSA(P, m_star, m_planet, e, i):
+    m_planet *= earth_mass_2_solar_mass
+    comb_mass = m_star + m_planet
+    return 2 * np.pi * np.sin(i) * m_planet / (np.sqrt(1 - (e * e)) * np.cbrt(comb_mass * comb_mass * P))* meters_p_AU / seconds_p_day / days_p_year
+
+def mass_from_VSA(P, m_star, VSA, e, i):
+    return 1 / (2 * np.pi * np.sin(i) * VSA / (np.sqrt(1 - (e * e)) * np.cbrt(m_star * m_star * P))* meters_p_AU / seconds_p_day / days_p_year) / earth_mass_2_solar_mass
