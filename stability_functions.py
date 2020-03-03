@@ -11,15 +11,17 @@ import dill
 import sys
 import time
 import pandas as pd
-if not '../MLstability/generate_training_data' in sys.path:
-    sys.path.append('../MLstability/generate_training_data')
-# from training_data_functions import ressummaryfeaturesxgb
-from training_data_functions import ressummaryfeaturesxgbv6
+# if not '../MLstability/generate_training_data' in sys.path:
+#     sys.path.append('../MLstability/generate_training_data')
+# # from training_data_functions import ressummaryfeaturesxgb
+# from training_data_functions import ressummaryfeaturesxgbv6
 
-folderpath = '../MLstability'
-# model = 'ressummaryfeaturesxgb_resonantAMD.pkl'
-model = 'ressummaryfeaturesxgbv6_resonant.pkl'
-model, features, featurefolder = dill.load(open(folderpath+'/models/'+model, "rb"))
+# folderpath = '../MLstability'
+# # model = 'ressummaryfeaturesxgb_resonantAMD.pkl'
+# model = 'ressummaryfeaturesxgbv6_resonant.pkl'
+# model, features, featurefolder = dill.load(open(folderpath+'/models/'+model, "rb"))
+
+sys.path.append("../spock")
 
 seconds_p_day = 86400
 days_p_year = 365.25
@@ -27,7 +29,7 @@ meters_p_AU = 149597870700
 earth_mass_2_solar_mass = 0.000003003
 year_p_reboundtime = 1 / (2 * np.pi)
 
-def build_sim(Ps, ms, es=0, incs=0, Mstar=1):
+def build_sim(Ps, ms, es=0, incs=-np.ones(3), Mstar=1, Rstar=1):
     
     Nplanets = len(Ps)
     
@@ -48,24 +50,16 @@ def build_sim(Ps, ms, es=0, incs=0, Mstar=1):
     #add star
     sim.add(m=Mstar)
 
-    if all(incs==0):
-        a = np.cbrt((Ps[i]*(2*np.pi))**2 * Ms)
+    if all(incs==-np.ones(3)):
+        a = np.cbrt((Ps*(2*np.pi))**2 * Mstar)
         Rs2AU = 0.00465047
-        Rstar = 1
         incs=np.array([rd.uniform(high=0.9 * Rstar * Rs2AU / a[i]) for i in range(Nplanets)])
 
     Ws=2 * np.pi * rd.sample(Nplanets)
     ws=2 * np.pi * rd.sample(Nplanets)
     Ms=2 * np.pi * rd.sample(Nplanets)
     for i in range(Nplanets):
-        m = ms[i] * earth_mass_2_solar_mass
-        P = Ps[i]
-        e = es[i]
-        inc = incs[i]
-        W = Ws[i]
-        w = ws[i]
-        M = Ms[i]
-        sim.add(m=m, P=P / year_p_reboundtime, e=e, inc=inc, Omega=W, omega=w, M=M, r=radii[i]) #G=1 units!
+        sim.add(m=ms[i] * earth_mass_2_solar_mass, P=Ps[i] / year_p_reboundtime, e=es[i], inc=incs[i], Omega=Ws[i], omega=ws[i], M=Ms[i], r=radii[i]) #G=1 units!
     sim.move_to_com()
     
     sim.collision_resolve = collision
@@ -99,24 +93,59 @@ def draw_masses(sample=int(1e3 * 10)):
     md = scipy.stats.gaussian_kde(mr.Rstat2M(2.164, 0.085, return_post=True, sample_size=sample, grid_size=sample))
     return mb, mc, md
 
-def build_chosen_HR858(ms, es, return_extra=False, Ps = np.array([a_normal(3.58599, 0.00015, 0.00015), a_normal(5.97293, 0.00060, 0.00053), a_normal(11.2300, 0.0011, 0.0010)]) / days_p_year, incs = np.pi / 180 * np.array([a_normal(85.5, 1.5, 0.5), a_normal(86.23, 0.26, 0.26), a_normal(87.43, 0.18, 0.19)])):
+# https://arxiv.org/abs/1805.00231, Berger 2018
+def draw_massesK431(sample=int(1e3 * 10)):
+    mb = scipy.stats.gaussian_kde(mr.Rstat2M(1.088, 0.146, return_post=True, sample_size=sample, grid_size=sample))
+    mc = scipy.stats.gaussian_kde(mr.Rstat2M(1.072, 0.171, return_post=True, sample_size=sample, grid_size=sample))
+    md = scipy.stats.gaussian_kde(mr.Rstat2M(1.307, 0.160, return_post=True, sample_size=sample, grid_size=sample))
+    return mb, mc, md
+
+def build_chosen_HR858(ms, es, Ps, return_extra=False, incs = np.pi / 180 * np.array([a_normal(85.5, 1.5, 0.5), a_normal(86.23, 0.26, 0.26), a_normal(87.43, 0.18, 0.19)])):
     sim = build_sim(Ps, ms, Mstar=1.145, es=es, incs=incs - np.pi/2)
     if return_extra:
         return sim, Ps, ms, es, incs
     else:
         return sim
 
-def build_HR858(mb, mc, md, es=np.array([rd.rand() * 0.3, rd.rand() * 0.19, rd.rand() * 0.28]), return_extra=False):
+def build_HR858(mb, mc, md, es=np.array([rd.rand() * 0.3, rd.rand() * 0.19, rd.rand() * 0.28]), Ps = np.array([a_normal(3.58599, 0.00015, 0.00015), a_normal(5.97293, 0.00060, 0.00053), a_normal(11.2300, 0.0011, 0.0010)]) / days_p_year, return_extra=False):
     ms = np.array([mb.resample(1)[0][0], mc.resample(1)[0][0], md.resample(1)[0][0]])  # earth masses
-    return build_chosen_HR858(ms, es, return_extra=return_extra)
+    return build_chosen_HR858(ms, es, Ps, return_extra=return_extra)
+
+# https://arxiv.org/abs/1605.02825 Morton et al. 2016
+def build_chosen_K431(ms, es, Ps, return_extra=False):
+    sim = build_sim(Ps, ms, Mstar=a_normal(1.071, 0.059, 0.037), es=es, Rstar=1.092)
+    if return_extra:
+        return sim, Ps, ms, es
+    else:
+        return sim
+
+def max_e_inner(a_in, a_out, e_out=0):
+    return a_out / a_in * (1 - e_out) - 1
+
+def max_e_outer(a_out, a_in, e_in=0):
+    return 1 - a_in / a_out * (1 + e_in)
+
+As = np.array([6.80252171, 8.70337044, 11.9216214]) ** (2./3)
+
+e0_max = max_e_inner(As[0], As[1])
+e1_max = np.minimum(max_e_inner(As[1], As[2]), max_e_outer(As[1], As[0]))
+e2_max = max_e_outer(As[2], As[1])
+
+def check_es(a0, e0, a1, e1, a2, e2):
+    return (e0 <= max_e_inner(a0, a1, e1)) and (e1 <= max_e_inner(a1, a2, e2)) and (e1 <= max_e_outer(a1, a0, e0)) and (e2 <= max_e_outer(a2, a1, e1))
+
+def build_K431(mb, mc, md, es=np.array([rd.rand() * e0_max, rd.rand() * e1_max, rd.rand() * e2_max]), Ps = np.array([a_normal(6.80252171, 7.931e-05, 7.931e-05), a_normal(8.70337044, 9.645e-05, 9.645e-05), a_normal(11.9216214, 0.0001182, 0.0001182)]) / days_p_year, return_extra=False):
     
-def stability_score(sim):
-    args = (10000, 1000) # (Norbits, Nout) Keep this fixed
-    summaryfeatures = ressummaryfeaturesxgbv6(sim, args)
-    if features is not None:
-        summaryfeatures = summaryfeatures[features]
-    summaryfeatures = pd.DataFrame([summaryfeatures])
-    return model.predict_proba(summaryfeatures)[:, 1][0]
+    ms = np.array([mb.resample(1)[0][0], mc.resample(1)[0][0], md.resample(1)[0][0]])  # earth masses
+    return build_chosen_K431(ms, es, Ps, return_extra=return_extra)
+    
+# def stability_score(sim):
+#     args = (10000, 1000) # (Norbits, Nout) Keep this fixed
+#     summaryfeatures = ressummaryfeaturesxgbv6(sim, args)
+#     if features is not None:
+#         summaryfeatures = summaryfeatures[features]
+#     summaryfeatures = pd.DataFrame([summaryfeatures])
+#     return model.predict_proba(summaryfeatures)[:, 1][0]
 
 #if a collision occurs, end the simulation
 def collision(reb_sim, col):
