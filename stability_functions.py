@@ -58,7 +58,7 @@ def build_sim(Ps, ms, es, incs, Mstar, Rstar):
     sim.ri_whfast.safe_mode = 0
     
     sim.integrator = "whfast"
-    sim.dt = np.sqrt(2) / 20 * sim.particles[1].P
+    sim.dt = np.sqrt(2) / 40 * sim.particles[1].P  # ~0.035355
 
     return sim
 
@@ -84,77 +84,146 @@ def a_normal(mean, upper_sigma, lower_sigma):
     return draw + mean
 
 def valid_system(system):
-    assert system in ["HR858", "K431", "TOI270", "L98-59"]
+    assert system in ["HR858", "K431", "TOI270", "L98-59", "K23"]
     
-def draw_masses(system, sample=int(1e4)):
+# def draw_masses(system, sample=int(1e4)):
     
-    if system == "HR858":
-        R, Rerr = [2.085, 1.939, 2.164], [0.066, 0.069, 0.085]
+#     if system == "HR858":
+#         R, Rerr = [2.085, 1.939, 2.164], [0.066, 0.069, 0.085]
         
-    if system == "K431":
-        R, Rerr = [1.088, 1.072, 1.307], [0.146, 0.117, 0.16]
+#     if system == "K431":
+#         R, Rerr = [1.088, 1.072, 1.307], [0.146, 0.117, 0.16]
     
-    if system == "TOI270":
-        R, Rerr = [1.247, 2.42, 2.13], [0.086, 0.13, 0.12]
+#     if system == "TOI270":
+#         R, Rerr = [1.247, 2.42, 2.13], [0.086, 0.13, 0.12]
         
-    if system == "L98-59":
-        R, Rerr = [0.8, 1.35, 1.57], [0.05, 0.08, 0.14]
+#     if system == "L98-59":
+#         R, Rerr = [0.8, 1.35, 1.57], [0.05, 0.08, 0.14]
     
-    assert Nplanets==len(R)==len(Rerr)
-    mb = scipy.stats.gaussian_kde(mr.Rstat2M(R[0], Rerr[0], return_post=True, sample_size=sample, grid_size=sample))
-    mc = scipy.stats.gaussian_kde(mr.Rstat2M(R[1], Rerr[1], return_post=True, sample_size=sample, grid_size=sample))
-    md = scipy.stats.gaussian_kde(mr.Rstat2M(R[2], Rerr[2], return_post=True, sample_size=sample, grid_size=sample))
-    return mb, mc, md
+#     #Berger et al. 2018
+#     if system == "K23":
+#         R, Rerr = [1.728, 3.075, 2.175], [0.086, 0.136, 0.105]
+    
+#     assert Nplanets==len(R)==len(Rerr)
+#     mb = scipy.stats.gaussian_kde(mr.Rstat2M(R[0], Rerr[0], return_post=True, sample_size=sample, grid_size=sample))
+#     mc = scipy.stats.gaussian_kde(mr.Rstat2M(R[1], Rerr[1], return_post=True, sample_size=sample, grid_size=sample))
+#     md = scipy.stats.gaussian_kde(mr.Rstat2M(R[2], Rerr[2], return_post=True, sample_size=sample, grid_size=sample))
+#     return mb, mc, md
 
-def build_forecasted_system(system, mb, mc, md):
+# def build_forecasted_system(system, mb, mc, md):
+    
+#     incs=-np.ones(3)
+
+#     if system == "HR858":
+#         Ps = np.array([a_normal(3.58599, 0.00015, 0.00015), a_normal(5.97293, 0.00060, 0.00053), a_normal(11.2300, 0.0011, 0.0010)])
+#         Mstar = a_normal(1.145, 0.074, 0.08)
+#         Rstar = a_normal(1.31, 0.024, 0.022)
+#         incs = np.array([a_normal(85.5, 1.5, 0.5), a_normal(86.23, 0.26, 0.26), a_normal(87.43, 0.18, 0.19)])
+        
+#     if system == "K431":
+#         Ps = Ps = np.array([a_normal(6.80252171, 7.931e-05, 7.931e-05), a_normal(8.70337044, 9.645e-05, 9.645e-05), a_normal(11.9216214, 0.0001182, 0.0001182)])
+#         Mstar = a_normal(1.150, 0.087, 0.059)
+#         Rstar = a_normal(1.41, 0.275, 0.24)
+    
+#     if system == "TOI270":
+#         Ps = np.array([a_normal(3.36008, 0.000065, 0.000070), a_normal(5.660172, 0.000035, 0.000035), a_normal(11.38014, 0.00011, 0.00010)])
+#         Mstar = a_normal(0.40, 0.02, 0.02)
+#         Rstar = a_normal(0.38, 0.02, 0.02)
+#         incs = np.array([a_normal(88.65, 0.85, 1.40), a_normal(89.53, 0.30, 0.42), a_normal(89.69, 0.16, 0.12)])
+        
+#     if system == "L98-59":
+#         Ps = np.array([a_normal(2.25314, 0.00002, 0.00002), a_normal(3.690621, 0.000013, 0.000014), a_normal(7.45086, 0.00004, 0.00005)])
+#         Mstar = a_normal(0.313, 0.014, 0.014)
+#         Rstar = a_normal(0.312, 0.014, 0.014)
+#         incs = np.array([a_normal(88.7, 0.8, 0.7), a_normal(89.3, 0.4, 0.5), a_normal(88.5, 0.2, 0.5)])
+        
+#     #Holczer et al. 2016 and Morton 2016
+#     if system == "K23":
+#         Ps = np.array([a_normal(7.10697755, 0.00001048, 0.00001048), a_normal(10.74244253, 0.00000349, 0.00000349), a_normal(15.27458613, 0.00000510, 0.00000510)])
+#         Mstar = a_normal(1.100, 0.038, 0.030)
+#         Rstar = a_normal(1.548, 0.048, 0.048)
+        
+#     Rstar *= AU_p_RS
+#     Ps /= days_p_year
+    
+#     As = np.cbrt((Ps*(2*np.pi))**2 * Mstar)
+#     if all(incs==-np.ones(3)):
+#         incs = np.array([rd.uniform(high=0.9 * Rstar * AU_p_RS / As[i]) for i in range(Nplanets)])
+#     else:
+#         incs = incs * np.pi / 180 - np.pi/2
+    
+#     es = np.array([0,0,0])
+#     e0_max = max_e_inner(As[0], As[1])
+#     e1_max = np.minimum(max_e_inner(As[1], As[2], es[2]), max_e_outer(As[1], As[0]))  # ~0.15
+#     e2_max = max_e_outer(As[2], As[1])
+#     es = rd.rand(3) * np.array([e0_max, e1_max, e2_max])
+# #     bad_es = True
+# #     while bad_es:
+# #         es = rd.rand(3) * np.array([e0_max, e1_max, e2_max])
+# #         bad_es = not check_es(As[0], es[0], As[1], es[1], As[2], es[2])
+        
+#     bad_ms = True
+#     while bad_ms:
+#         ms = np.array([mb.resample(1)[0][0], mc.resample(1)[0][0], md.resample(1)[0][0]])
+#         bad_ms = any([m < 0 for m in ms])
+
+#     return build_sim(Ps, ms, es, incs, Mstar, Rstar)
+
+def build_Hadden_system(system, logm=False, loge=False):
     
     incs=-np.ones(3)
-
-    if system == "HR858":
-        Ps = np.array([a_normal(3.58599, 0.00015, 0.00015), a_normal(5.97293, 0.00060, 0.00053), a_normal(11.2300, 0.0011, 0.0010)])
-        Mstar = a_normal(1.145, 0.074, 0.08)
-        Rstar = a_normal(1.31, 0.024, 0.022)
-        incs = np.array([a_normal(85.5, 1.5, 0.5), a_normal(86.23, 0.26, 0.26), a_normal(87.43, 0.18, 0.19)])
         
-    if system == "K431":
-        Ps = Ps = np.array([a_normal(6.80252171, 7.931e-05, 7.931e-05), a_normal(8.70337044, 9.645e-05, 9.645e-05), a_normal(11.9216214, 0.0001182, 0.0001182)])
-        Mstar = a_normal(1.150, 0.087, 0.059)
-        Rstar = a_normal(1.41, 0.275, 0.24)
-    
-    if system == "TOI270":
-        Ps = np.array([a_normal(3.36008, 0.000065, 0.000070), a_normal(5.660172, 0.000035, 0.000035), a_normal(11.38014, 0.00011, 0.00010)])
-        Mstar = a_normal(0.40, 0.02, 0.02)
-        Rstar = a_normal(0.38, 0.02, 0.02)
-        incs = np.array([a_normal(88.65, 0.85, 1.40), a_normal(89.53, 0.30, 0.42), a_normal(89.69, 0.16, 0.12)])
-        
-    if system == "L98-59":
-        Ps = np.array([a_normal(2.25314, 0.00002, 0.00002), a_normal(3.690621, 0.000013, 0.000014), a_normal(7.45086, 0.00004, 0.00005)])
-        Mstar = a_normal(0.313, 0.014, 0.014)
-        Rstar = a_normal(0.312, 0.014, 0.014)
-        incs = np.array([a_normal(88.7, 0.8, 0.7), a_normal(89.3, 0.4, 0.5), a_normal(88.5, 0.2, 0.5)])
+    #Hadden 2017 Table 1
+    if system == "K23":
+        Ps = np.array([7.107, 10.742, 15.274])
+        Mstar = a_normal(1.00, 0.1, 0.1)
+        Rstar = a_normal(1.548, 0.048, 0.048) # Morton 2016
+        R = np.array([1.8, 3.2, 2.3])
+#         Rerr = [0.086, 0.136, 0.105]
+#         R = [a_normal(R[0], Rerr[0], Rerr[0]), a_normal(R[1], Rerr[1], Rerr[1]), a_normal(R[2], Rerr[2], Rerr[2])]
         
     Rstar *= AU_p_RS
     Ps /= days_p_year
     
     As = np.cbrt((Ps*(2*np.pi))**2 * Mstar)
     if all(incs==-np.ones(3)):
-        incs = np.array([rd.uniform(high=0.9 * Rstar * AU_p_RS / As[i]) for i in range(Nplanets)])
+        incs = np.array([rd.uniform(high=0.9 * Rstar / As[i]) for i in range(Nplanets)])
     else:
         incs = incs * np.pi / 180 - np.pi/2
     
-    bad_es = True
-    es = np.array([0,0,0])
-    e0_max = max_e_inner(As[0], As[1])
-    e1_max = np.minimum(max_e_inner(As[1], As[2], es[2]), max_e_outer(As[1], As[0]))  # ~0.15
-    e2_max = max_e_outer(As[2], As[1])
-    while bad_es:
-        es = rd.rand(3) * np.array([e0_max, e1_max, e2_max])
-        bad_es = not check_es(As[0], es[0], As[1], es[1], As[2], es[2])
+#     es = np.array([0,0,0])
+#     e0_max = max_e_inner(As[0], As[1])
+#     e1_max = np.minimum(max_e_inner(As[1], As[2], es[2]), max_e_outer(As[1], As[0]))  # ~0.15
+#     e2_max = max_e_outer(As[2], As[1])
+    
+    lowm = 0.0544143  # Mearth/Rearth^3 for 0.3 g/cc
+    highm = 5.44143  # Mearth/Rearth^3 for 30 g/cc
+    
+    if logm:
+        ms = loguniform(lowm, highm, 3) * (R*R*R)
+    else:
+        ms = rd.uniform(lowm, highm, 3) * (R*R*R)
+
+    if loge:
+    #     e1min = ((ms[1] / ((As[0]-As[1])**2)) + (ms[2] / ((As[0]-As[2])**2))) / (sf.earth_mass_p_solar_mass * (Mstar / (As[0]**2)))
+    #     e2min = ((ms[0] / ((As[1]-As[0])**2)) + (ms[2] / ((As[1]-As[2])**2))) / (sf.earth_mass_p_solar_mass * (Mstar / (As[1]**2)))
+    #     e3min = ((ms[0] / ((As[2]-As[0])**2)) + (ms[1] / ((As[2]-As[1])**2))) / (sf.earth_mass_p_solar_mass * (Mstar / (As[2]**2)))
+        emin = 0.001
+        emax = 0.9
+        es = loguniform(low=emin, high=emax, size=3)
+    else:
+        es = rd.rand(3) * 0.9
+#     bad_es = True
+#     while bad_es:
+#         es = rd.rand(3) * np.array([e0_max, e1_max, e2_max])
+#         bad_es = not check_es(As[0], es[0], As[1], es[1], As[2], es[2])
         
-    bad_ms = True
-    while bad_ms:
-        ms = np.array([mb.resample(1)[0][0], mc.resample(1)[0][0], md.resample(1)[0][0]])
-        bad_ms = any([m < 0 for m in ms])
+#     bad_ms = True
+#     while bad_ms:
+#         ms = np.array([mb.resample(1)[0][0], mc.resample(1)[0][0], md.resample(1)[0][0]])
+#         bad_ms = any([m < 0 for m in ms])
+
+    
 
     return build_sim(Ps, ms, es, incs, Mstar, Rstar)
 
@@ -167,7 +236,7 @@ def build_forecasted_system(system, mb, mc, md):
 #         return sim
 
 def max_e_inner(a_in, a_out, e_out=0):
-    return np.maximum(a_out / a_in * (1 - e_out) - 1, 1)
+    return np.minimum(a_out / a_in * (1 - e_out) - 1, 1)
 
 def max_e_outer(a_out, a_in, e_in=0):
     return 1 - a_in / a_out * (1 + e_in)
@@ -216,7 +285,7 @@ def gaussian(x, a, mean, sigma):
     return a * np.exp(-((x - mean)**2 / (2 * sigma**2)))
 
 def pred(sim_names, nsim):
-    sim = rebound.SimulationArchive(sim_names + "_sa_%d.bin"%nsim)[0]
+    sim = rebound.SimulationArchive(sim_names + "_%d.bin"%nsim)[0]
 #     sim.move_to_com()
 #     sim.integrator="whfast"
 #     sim.dt = 0.07*sim.particles[1].P
@@ -241,15 +310,17 @@ def add_k_cols(df):
     return df
 
 def get_k(sim_names, row):
-    sim = rebound.SimulationArchive(sim_names + "_sa_%d.bin"%(row[0]))[0]
+    sim = rebound.SimulationArchive(sim_names + "_%d.bin"%(row[0]))[0]
 #     print(sim)
     p2 = sim.particles[2]
     row['h'] = p2.e*np.sin(p2.pomega)
     row['k'] = p2.e*np.cos(p2.pomega)
-    avars = Andoyer.from_Simulation(sim, a10=sim.particles[1].a, j=5, k=1, i1=1, i2=2, average=False)
+#     avars = Andoyer.from_Simulation(sim, a10=sim.particles[1].a, j=3, k=1, i1=1, i2=2, average=False)
+    avars = Andoyer.from_Simulation(sim, j=3, k=1, i1=1, i2=2)
     row['Z12'] = avars.Z
     row['Zcom12'] = avars.Zcom
-    avars = Andoyer.from_Simulation(sim, a10=sim.particles[1].a, j=4, k=1, i1=2, i2=3, average=False)
+#     avars = Andoyer.from_Simulation(sim, a10=sim.particles[2].a, j=7, k=2, i1=2, i2=3, average=False)
+    avars = Andoyer.from_Simulation(sim, j=7, k=2, i1=2, i2=3)
     row['Z23'] = avars.Z
     row['Zcom23'] = avars.Zcom
     row['e1'] = sim.particles[1].e
@@ -268,13 +339,13 @@ def quantile_1D(data, weights, quantile):
     Pn = (Sn-0.5*sorted_weights)/Sn[-1]
     return np.interp(quantile, Pn, sorted_data)
 
-def create_stab_hist(system, df, label, show_quantiles=True, label2="", xlabel=""):
+def create_stab_hist(system, df, label, show_quantiles=True, label2="", xlabel="", nbins=50):
     if label2 == "":
         label2=label
     plt.figure(figsize=(8,4.5))
-    n_bins=50
-    plt.hist(df[label], density=True, bins=n_bins, alpha=0.6)
-    plt.hist(df[label], density=True, bins=n_bins, alpha=0.6, weights=df["probstability"])
+    plt.hist(df[label], density=True, bins=nbins, alpha=0.6)
+    df2 = df[df["probstability"] != 0]
+    n, bins, patches = plt.hist(df2[label], density=True, bins=nbins, alpha=0.6, weights=df2["probstability"])
     # plt.hist(df[label], n_bins, density=True, histtype='step', cumulative=True)
     # plt.hist(df[label], n_bins, density=True, histtype='step', cumulative=True, weights=df["probstability"])
     plt.title(system + " " + label2, size=30)
@@ -293,8 +364,8 @@ def create_stab_hist(system, df, label, show_quantiles=True, label2="", xlabel="
     
     quant1 = np.quantile(df[label], 0.16)
     quant2 = np.quantile(df[label], 0.84)
-    quant3 = quantile_1D(df[label], df["probstability"], 0.16)
-    quant4 = quantile_1D(df[label], df["probstability"], 0.84)
+    quant3 = quantile_1D(df2[label], df2["probstability"], 0.16)
+    quant4 = quantile_1D(df2[label], df2["probstability"], 0.84)
     sigma1 = (quant2 - quant1) / 2
     sigma2 = (quant4 - quant3) / 2
     print("\"sigma\" before: %f"%(sigma1))
@@ -315,7 +386,7 @@ def create_stab_hist(system, df, label, show_quantiles=True, label2="", xlabel="
 #         plt.plot(xs, ys, color="C0")
         plt.plot(xs, gaussian(xs, *popt1), color="C0")
         
-        kde = scipy.stats.gaussian_kde(df[label], weights=df["probstability"])
+        kde = scipy.stats.gaussian_kde(df2[label], weights=df2["probstability"])
         ys = kde(xs) + kde(-xs)
         popt2, pcov = curve_fit(gaussian, xs, ys, [0.3, 1, 3])
         print("Gaussian fit std after: ", popt2[2])
@@ -323,9 +394,9 @@ def create_stab_hist(system, df, label, show_quantiles=True, label2="", xlabel="
 #         plt.plot(xs, gaussian(xs, *popt2), color="C1")
         
         print("factor of %f smaller\n"%(popt1[2]/popt2[2]))
-    plt.savefig("figs/" + system + "_" + label + "_hist.png", bbox_inches="tight")
+    return n, bins
     
-def create_mcmc_hist(system, df, df2, label, show_quantiles=True, label2="", xlabel="", max_x=np.inf):
+def create_mcmc_hist(system, err_ind, df, df2, label, show_quantiles=True, label2="", xlabel="", max_x=np.inf):
     
     print("working on " + label + "\n")
     if label2 == "":
@@ -395,22 +466,6 @@ def plot_radvel_results(like, t):
     plt.xlabel('Time')
     plt.ylabel('RV')
     plt.draw()
-    
-def prep_radvel_df(df2):
-    df = df2.copy()
-#     df = df.drop(columns="jit")
-    df = df.drop(columns="lnprobability")
-    for i in range(1,4):
-        df["e%d"%i] = df["secosw%d"%i] * df["secosw%d"%i] + df["sesinw%d"%i] * df["sesinw%d"%i]
-#         df["e%d"%i][df["e%d"%i] > 1] = 0
-        df["m%d"%i] = mass_from_VSA(df["per%d"%i] / days_p_year, Mstar, df["k%d"%i].abs(), df["e%d"%i], np.pi/2)
-        df = df.drop(columns="k%d"%i)
-        df = df.drop(columns="per%d"%i)
-        df = df.drop(columns="tc%d"%i)
-        df = df.drop(columns="secosw%d"%i)
-        df = df.drop(columns="sesinw%d"%i)
-    df = df[labels_base]
-    return df
 
 def myPriorFunc(labels, Mstar, prior_ms_small, prior_es_small, inp_list):
 
