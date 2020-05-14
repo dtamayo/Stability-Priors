@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 plt.style.use('paper.mplstyle')
 import scipy
 from scipy.optimize import curve_fit
-import radvel
+#import radvel
 
 sys.path.append("../spock")
 from spock import StabilityClassifier
