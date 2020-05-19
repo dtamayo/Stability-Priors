@@ -1,31 +1,23 @@
-# Author: Marin Gilles
-# Contact: <mrngilles@gmail.com>
-# Github: Mrngilles
-#
-# Publication style :
-#
-# Provides text of proper size for an article ready figure
-# Of course, these values may change depending on the paper the figure is to be
-# published in. 
-#
-# Do not hesitate to copy and modify this style for your convenience. If you
-# happen to do it for a particular paper, please send me the modified version
-# with the exact name of the paper (and a specification format sheet, if you
-# can) so that I can make the style available using the paper name. This way,
-# you will only have to remember the paper name to get the good style on it.
-# You can find my coordinates on top of this file.
+legend.scatterpoints : 1 
+legend.fontsize : 16
+ 
+image.interpolation : Nearest
+## Heavier ticks & add minor ticks
+xtick.minor.size : 3.0 
+xtick.major.size : 6.0 
+xtick.minor.width : 2.0 
+xtick.major.width : 2.0 
+ 
+ytick.minor.size : 3.0 
+ytick.major.size : 6.0 
+ytick.minor.width : 2.0 
+ytick.major.width : 2.0 
+## Square
+figure.figsize : 6.0, 6.0 
 
-## font properties
-font.family:  sans-serif
-font.size:    12
-
-# axes properties
-axes.titlesize:   17
-axes.labelsize:   14
-
-## Tick properties
-xtick.labelsize:   14
-ytick.labelsize:   14
-
-## Legend properties
-legend.fontsize : 12
+axes.titlesize : 24
+axes.labelsize : 20
+lines.linewidth : 3 
+lines.markersize : 10
+xtick.labelsize : 16
+ytick.labelsize : 16
