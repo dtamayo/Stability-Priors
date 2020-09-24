@@ -1,3 +1,10 @@
+*.pdf
+K23uniform
+K23withloge
+csvs/Kepler-23_TTVs.csv
+csvs/Kepler-23_transitdurations.csv
+data/Hadden17/NBody_MCMC_Posteriors.hdf5
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
