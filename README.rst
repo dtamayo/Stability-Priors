@@ -1,7 +1,7 @@
 Stability Constrained Characterization of Multiplanet Systems
 *************************************************************
 
-As a way to help future stability analyses, we provide the scripts used to generate the figures in Tamayo, Gilbertson and Foreman-Mackey (2020). See the figures/ folder.
+As a way to help future stability analyses, we provide the scripts used to generate the figures in Tamayo, Gilbertson and Foreman-Mackey (2020): `http://arxiv.org/abs/2009.11831 <http://arxiv.org/abs/2009.11831>`_. See the figures/ folder.
 
 Reading the paper will save you some time! We recommend:
 
